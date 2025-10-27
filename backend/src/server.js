@@ -9,7 +9,33 @@ import authRoutes from "./routes/authRoutes.js";
 dotenv.config(); // ca veut dire va chercher les variables globales dans le fichier .env
 const app = express();
 
-app.use(cors({ origin:"https://convention-platform.vercel.app/"})); //liaison avec frontend
+// ✅ Liste exacte des origines autorisées
+const allowedOrigins = [
+  "https://convention-platform.vercel.app",
+  "https://convention-platform-git-main-aicha-addous-projects.vercel.app",
+  "http://localhost:3000"
+];
+
+
+
+ //liaison avec frontend
+ app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log("❌ CORS blocked for origin:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+
 app.use(express.json()); 
 
 app.use("/api/users", userRoutes);
