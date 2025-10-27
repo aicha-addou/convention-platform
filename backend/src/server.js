@@ -9,8 +9,8 @@ import authRoutes from "./routes/authRoutes.js";
 dotenv.config(); // ca veut dire va chercher les variables globales dans le fichier .env
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({ origin:"https://convention-platform.vercel.app/"})); //liaison avec frontend
+app.use(express.json()); 
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);

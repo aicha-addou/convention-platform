@@ -1,0 +1,29 @@
+# === Node modules ===
+node_modules/
+**/node_modules/
+npm-debug.log
+yarn-error.log
+
+# === Build / dist ===
+build/
+dist/
+coverage/
+.DS_Store
+
+# === Env files ===
+.env
+**/.env
+
+# === Logs ===
+logs
+*.log
+
+# === IDE / System ===
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+
+# === Cache ===
+*.cache
+.eslintcache
