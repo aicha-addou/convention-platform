@@ -30,6 +30,11 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {return res.status(400).json({ message: "Utilisateur introuvable" });}
 
+       
+    if (user.status === "inactif") {
+      return res.status(403).json({ message: "Compte désactivé. Contactez un administrateur." });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {return res.status(400).json({ message: "Mot de passe incorrect" });}
 

@@ -48,7 +48,7 @@ router.get("/", protect, authorize("admin"), async (req, res) => {
   try {
     const users = await User.find().select("-password");
     res.json(users);
-  } catch (err) {
+  } catch  {
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -62,7 +62,7 @@ router.put("/:id", protect, authorize("admin"), async (req, res) => {
       { new: true }
     ).select("-password");
     res.json(updatedUser);
-  } catch (err) {
+  } catch {
     res.status(400).json({ message: "Erreur de mise à jour" });
   }
 });
@@ -72,7 +72,7 @@ router.delete("/:id", protect, authorize("admin"), async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
     res.json({ message: "Utilisateur supprimé" });
-  } catch (err) {
+  } catch {
     res.status(400).json({ message: "Erreur de suppression" });
   }
 });
