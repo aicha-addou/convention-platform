@@ -11,6 +11,11 @@ const userSchema = new mongoose.Schema(
       enum: ["prestataire", "referent", "admin"],
       default: "prestataire",
     },
+    status: {
+      type: String,
+      enum: ["actif", "inactif"],
+      default: "actif",
+    },
   },
   { timestamps: true }
 );

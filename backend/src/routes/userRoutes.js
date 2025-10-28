@@ -1,6 +1,8 @@
 import express from "express";
 import User from "../models/User.js";
 import { protect } from "../middlewares/authMiddleWare.js";
+import { authorize } from "../middlewares/authorizeMiddleWare.js";
+
 
 const router = express.Router();
 
@@ -41,10 +43,39 @@ router.put("/me", protect, async (req, res) => {
 });
 
 
-// ✅ Lister tous les utilisateurs (utile pour admin only, plus tard)
-router.get("/", async (req, res) => {
-  const users = await User.find();
-  res.json(users);
+// 🧾 Récupérer tous les utilisateurs (admin only)
+router.get("/", protect, authorize("admin"), async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
 });
+
+//  Modifier un utilisateur (admin only)
+router.put("/:id", protect, authorize("admin"), async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    ).select("-password");
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(400).json({ message: "Erreur de mise à jour" });
+  }
+});
+
+// ❌ Supprimer un utilisateur (admin only)
+router.delete("/:id", protect, authorize("admin"), async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "Utilisateur supprimé" });
+  } catch (err) {
+    res.status(400).json({ message: "Erreur de suppression" });
+  }
+});
+
 
 export default router;
