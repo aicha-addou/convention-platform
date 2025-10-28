@@ -1,5 +1,7 @@
 const API_URL = "https://convention-platform.onrender.com/api";
 
+
+
 export const registerUser = async (userData) => {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
