@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import DashboardAdmin from "./DashboardAdmin";
-import DashboardReferent from "./DashboardReferent.jsx";
-import DashboardPrestataire from "./DashboardPrestataire";
+import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -38,38 +37,38 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   if (error) {
     return (
-      <div className="dashboard-container">
-        <p className="error-text">{error}</p>
-        <button className="btn logout" onClick={handleLogout}>
-          Se reconnecter
-        </button>
+      <div className="dashboard-error">
+        <p>{error}</p>
+        <button onClick={handleLogout}>Se reconnecter</button>
       </div>
     );
   }
 
-  if (!user) return <p className="loading-text">Chargement...</p>;
+  if (!user) return <p className="dashboard-loading">Chargement...</p>;
 
-  // 🧭 Redirection automatique selon le rôle
-  switch (user.role) {
-    case "admin":
-      return <DashboardAdmin user={user} handleLogout={handleLogout} />;
-    case "referent":
-      return <DashboardReferent user={user} handleLogout={handleLogout} />;
-    case "prestataire":
-      return <DashboardPrestataire user={user} handleLogout={handleLogout} />;
-    default:
-      return (
-        <div className="dashboard-container">
-          <p>Rôle inconnu. Contacte un administrateur.</p>
-          <button className="btn logout" onClick={handleLogout}>
-            Se déconnecter
-          </button>
-        </div>
-      );
-  }
+  return (
+    <div className="dashboard-container">
+      <h2>Bienvenue sur ton Dashboard 🎉</h2>
+      <div className="dashboard-info">
+        <p><strong>Nom :</strong> {user.name}</p>
+        <p><strong>Email :</strong> {user.email}</p>
+        <p><strong>Rôle :</strong> {user.role}</p>
+      </div>
+
+      {user.role === "admin" && (
+        <button className="users-btn" onClick={() => navigate("/users")}>
+          👥 Gérer les utilisateurs
+        </button>
+      )}
+
+      <button className="logout-btn" onClick={handleLogout}>
+        Se déconnecter
+      </button>
+    </div>
+  );
 }
