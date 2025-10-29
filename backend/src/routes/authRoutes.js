@@ -14,7 +14,16 @@ router.post("/register", async (req, res) => {
     if (existingUser)
       {return res.status(400).json({ message: "Email déjà utilisé" });}
 
-    const user = await User.create({ name, email, password, role });
+     // ✅ Hachage manuel AVANT la création
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+    });
 
     return res.status(201).json({ message: "Utilisateur créé avec succès", user });
   } catch (err) {
@@ -36,7 +45,10 @@ router.post("/login", async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {return res.status(400).json({ message: "Mot de passe incorrect" });}
+    if (!isMatch) {
+      return res.status(400).json({ message: "Mot de passe incorrect" });
+    }
+
 
     const token = jwt.sign(
       { id: user._id, role: user.role },

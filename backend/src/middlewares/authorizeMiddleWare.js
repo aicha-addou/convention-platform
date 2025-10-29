@@ -1,11 +1,19 @@
 
 
 
-export const authorize = (...roles) => {
+export const authorize = (...allowedRoles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Accès interdit" });
+    // si l’utilisateur n’est pas connecté
+    if (!req.user) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
     }
-    return next();
+
+    // si l’utilisateur n’a pas le rôle autorisé
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Accès refusé : rôle non autorisé" });
+    }
+
+    next();
   };
 };
+
