@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children, role }) {
   }
 
   // Si un rôle spécifique est requis
-  if (role && user.role !== role) {
+  if (role && user && !role.includes(user.role)) {
     return <Navigate to="/dashboard" replace />;
   }
 
