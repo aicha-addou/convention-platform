@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from "react";
+import DashboardAdmin from "./DashboardAdmin";
+import DashboardReferent from "./DashboardReferent.jsx";
+import DashboardPrestataire from "./DashboardPrestataire";
+import "./Dashboard.css";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -39,22 +43,33 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div>
-        <p style={{ color: "red" }}>{error}</p>
-        <button onClick={handleLogout}>Se reconnecter</button>
+      <div className="dashboard-container">
+        <p className="error-text">{error}</p>
+        <button className="btn logout" onClick={handleLogout}>
+          Se reconnecter
+        </button>
       </div>
     );
   }
 
-  if (!user) return <p>Chargement...</p>;
+  if (!user) return <p className="loading-text">Chargement...</p>;
 
-  return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Bienvenue sur ton Dashboard 🎉</h2>
-      <p><strong>Nom :</strong> {user.name}</p>
-      <p><strong>Email :</strong> {user.email}</p>
-      <p><strong>Rôle :</strong> {user.role}</p>
-      <button onClick={handleLogout}>Se déconnecter</button>
-    </div>
-  );
+  // 🧭 Redirection automatique selon le rôle
+  switch (user.role) {
+    case "admin":
+      return <DashboardAdmin user={user} handleLogout={handleLogout} />;
+    case "referent":
+      return <DashboardReferent user={user} handleLogout={handleLogout} />;
+    case "prestataire":
+      return <DashboardPrestataire user={user} handleLogout={handleLogout} />;
+    default:
+      return (
+        <div className="dashboard-container">
+          <p>Rôle inconnu. Contacte un administrateur.</p>
+          <button className="btn logout" onClick={handleLogout}>
+            Se déconnecter
+          </button>
+        </div>
+      );
+  }
 }

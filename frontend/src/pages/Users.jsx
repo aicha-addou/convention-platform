@@ -5,20 +5,42 @@ export default function Users() {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [filterRole, setFilterRole] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        if (!token) {
+          setError("Vous devez être connecté pour accéder à cette page.");
+          return;
+        }
+
         const res = await fetch("https://convention-platform.onrender.com/api/users", {
-          headers: { Authorization: `Bearer ${token}` },
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
+
+        // 🧱 Si la réponse n’est pas ok
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            setError("Accès refusé. Vous n’êtes pas autorisé à consulter cette page.");
+          } else {
+            setError("Erreur lors du chargement des utilisateurs.");
+          }
+          return;
+        }
+
         const data = await res.json();
         setUsers(data);
         setFilteredUsers(data);
-      } catch (error) {
-        console.error("Erreur lors du chargement des utilisateurs :", error);
+      } catch{
+        
+        setError("Impossible de contacter le serveur.");
       }
     };
     fetchUsers();
