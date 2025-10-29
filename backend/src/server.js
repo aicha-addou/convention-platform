@@ -11,9 +11,9 @@ const app = express();
 
 // ✅ Liste exacte des origines autorisées
 const allowedOrigins = [
-  "https://convention-platform.vercel.app",
-  "https://convention-platform-git-main-aicha-addous-projects.vercel.app",
-  "http://localhost:3000"
+  "https://convention-platform.vercel.app", //prod
+  "https://convention-platform-git-main-aicha-addous-projects.vercel.app", //preview
+  "http://localhost:3000"                           // dev local
 ];
 
 
@@ -22,12 +22,16 @@ const allowedOrigins = [
  app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.some((allowed) => origin.startsWith(allowed))
+      ) {
         callback(null, true);
       } else {
         console.log("❌ CORS blocked for origin:", origin);
         callback(new Error("Not allowed by CORS"));
       }
+
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
