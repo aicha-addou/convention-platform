@@ -1,19 +1,11 @@
 import React from "react";
-import "./Dashboard.css";
+import ReferentLayout from "../layouts/ReferentLayout";
 
-export default function DashboardReferent({ user, handleLogout }) {
+export default function DashboardReferent() {
   return (
-    <div className="dashboard-container">
-      <h2>📋 Tableau de bord Référent</h2>
-      <p>Bienvenue, <strong>{user.name}</strong> !</p>
-      <p>Email : {user.email}</p>
-      <p>
-        Vous pouvez consulter les conventions qui vous ont été attribuées par l’administrateur.
-      </p>
-
-      <button className="btn logout" onClick={handleLogout}>
-        Se déconnecter
-      </button>
-    </div>
+    <ReferentLayout>
+      <h1 className="text-2xl font-semibold mb-4">Tableau de bord Référent</h1>
+      <p>Vue globale des conventions et des prestataires assignés.</p>
+    </ReferentLayout>
   );
 }

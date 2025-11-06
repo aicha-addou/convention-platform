@@ -1,38 +1,126 @@
+// src/App.js
 import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import Users from "./pages/Users";
 import ProtectedRoute from "./components/ProtectedRoute";
+
+// 🧩 Pages communes Admin / Référent / Prestataire
+import Conventions from "./pages/Conventions";
+import Reports from "./pages/Reports";
+
+// 🧩 Pages spécifiques Admin
+import DashboardAdmin from "./pages/DashboardAdmin";
+import Users from "./pages/Users";
+import Settings from "./pages/Settings";
+
+// 🧩 Pages spécifiques Référent
+import DashboardReferent from "./pages/DashboardReferent";
+
+// 🧩 Pages spécifiques Prestataire
+import DashboardPrestataire from "./pages/DashboardPrestataire";
 
 function App() {
   return (
     <Routes>
-      {/* /login et /register sont publiques */}
+      {/* 🌐 ROUTES PUBLIQUES */}
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* 🔒 Route protégée : La page /dashboard est protégée par le middleware React */}
+      {/* 🏛️ ESPACE ADMIN */}
       <Route
-        path="/dashboard"
+        path="/admin/dashboard"
         element={
-          <ProtectedRoute>
-            <Dashboard />
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <DashboardAdmin />
           </ProtectedRoute>
         }
       />
-
-      {/* 👥 Page utilisateurs */}
       <Route
-        path="/users"
+        path="/admin/conventions"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Conventions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Reports />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <Users />
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
 
+      {/* 🧭 ESPACE RÉFÉRENT */}
+      <Route
+        path="/referent/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["referent"]}>
+            <DashboardReferent />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/referent/conventions"
+        element={
+          <ProtectedRoute allowedRoles={["referent"]}>
+            <Conventions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/referent/reports"
+        element={
+          <ProtectedRoute allowedRoles={["referent"]}>
+            <Reports />
+          </ProtectedRoute>
+        }
+      />
 
+      {/* 🧰 ESPACE PRESTATAIRE */}
+      <Route
+        path="/prestataire/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["prestataire"]}>
+            <DashboardPrestataire />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/prestataire/conventions"
+        element={
+          <ProtectedRoute allowedRoles={["prestataire"]}>
+            <Conventions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/prestataire/reports"
+        element={
+          <ProtectedRoute allowedRoles={["prestataire"]}>
+            <Reports />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

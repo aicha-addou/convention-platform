@@ -1,36 +1,24 @@
+// src/components/Layout.jsx
 import React from "react";
-import "./Layout.css";
+import Navbar from "./Navbar";
 
-export default function Layout({ user, onLogout, children }) {
+export default function Layout({ user, sidebar: Sidebar, children }) {
   return (
-    <div className="layout">
-      {/* 🧭 Barre de navigation en haut */}
-      <header className="header">
-        <div className="header-left">
-          <h1>Convention Platform</h1>
-        </div>
-        <div className="header-right">
-          <button className="nav-btn" onClick={() => (window.location.href = "/profile")}>
-            👤 Profil
-          </button>
-          <button className="nav-btn logout" onClick={onLogout}>
-            🚪 Déconnexion
-          </button>
-        </div>
-      </header>
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Barre du haut */}
+      <Navbar user={user} />
 
-      {/* 🧱 Conteneur principal */}
-      <div className="main-container">
-        {/* 🚪 Barre latérale */}
-        <aside className="sidebar">
-          <ul>
-            <li onClick={() => (window.location.href = "/dashboard")}>📊 Dashboard</li>
-            {/* On ajoutera plus tard d’autres liens ici */}
-          </ul>
-        </aside>
+      {/* Corps principal */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar (responsive, gérée par le composant lui-même) */}
+        <Sidebar />
 
-        {/* 🧩 Contenu dynamique */}
-        <main className="content">{children}</main>
+        {/* Contenu principal */}
+        <main className="flex-1 p-8 overflow-y-auto">
+          <div className="max-w-5xl mx-auto">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
