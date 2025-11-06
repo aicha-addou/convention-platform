@@ -24,6 +24,8 @@ export default function Dashboard() {
 
         if (res.ok) {
           setUser(data);
+          // 💾 Sauvegarde le user localement (utile pour ProtectedRoute)
+          localStorage.setItem("user", JSON.stringify(data));
         } else {
           setError(data.message || "Erreur lors de la récupération du profil");
         }
@@ -37,6 +39,7 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
@@ -53,22 +56,29 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <h2>Bienvenue sur ton Dashboard 🎉</h2>
-      <div className="dashboard-info">
-        <p><strong>Nom :</strong> {user.name}</p>
-        <p><strong>Email :</strong> {user.email}</p>
-        <p><strong>Rôle :</strong> {user.role}</p>
+      <nav className="dashboard-topbar">
+        <h2>VIGIK Platform</h2>
+        <div className="dashboard-nav-actions">
+          <button onClick={() => navigate("/profile")}>👤 Profil</button>
+          <button onClick={handleLogout}>🚪 Déconnexion</button>
+        </div>
+      </nav>
+
+      <div className="dashboard-layout">
+        <aside className="dashboard-sidebar">
+          <button onClick={() => navigate("/dashboard")}>🏠 Tableau de bord</button>
+          {user.role === "admin" && (
+            <button onClick={() => navigate("/users")}>👥 Gérer les utilisateurs</button>
+          )}
+        </aside>
+
+        <main className="dashboard-content">
+          <h3>Bienvenue {user.name} 🎉</h3>
+          <p><strong>Email :</strong> {user.email}</p>
+          <p><strong>Rôle :</strong> {user.role}</p>
+          <p><strong>Statut :</strong> {user.status}</p>
+        </main>
       </div>
-
-      {user.role === "admin" && (
-        <button className="users-btn" onClick={() => navigate("/users")}>
-          👥 Gérer les utilisateurs
-        </button>
-      )}
-
-      <button className="logout-btn" onClick={handleLogout}>
-        Se déconnecter
-      </button>
     </div>
   );
 }

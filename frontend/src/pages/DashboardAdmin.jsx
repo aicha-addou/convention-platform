@@ -1,20 +1,12 @@
 import React from "react";
 import Layout from "../components/Layout";
-import "./Dashboard.css";
+import SidebarAdmin from "../components/SidebarAdmin";
 
-export default function DashboardAdmin({ user, handleLogout }) {
+export default function DashboardAdmin({ user }) {
   return (
-    <Layout user={user} onLogout={handleLogout}>
-      <h2>👑 Tableau de bord Admin</h2>
-      <p>Bienvenue, <strong>{user.name}</strong> !</p>
-      <p>Email : {user.email}</p>
-
-      <button
-        className="btn primary"
-        onClick={() => (window.location.href = "/users")}
-      >
-        👥 Gérer les utilisateurs
-      </button>
+    <Layout user={user} sidebar={SidebarAdmin}>
+      <h3>Bienvenue {user.name} 👑</h3>
+      <p>Vous pouvez gérer les utilisateurs et consulter les rapports.</p>
     </Layout>
   );
 }
