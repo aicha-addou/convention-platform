@@ -14,8 +14,8 @@ export default function ConventionForm({ onSuccess }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 🔧 Fonction générique (enregistrement ou soumission)
-  const handleSubmit = async (statut) => {
+  // 🧠 Fonction générique (création de brouillon OU soumission)
+  const handleSubmit = async (type) => {
     setLoading(true);
     setMessage("");
 
@@ -23,42 +23,58 @@ export default function ConventionForm({ onSuccess }) {
       const token = localStorage.getItem("token");
       const user = JSON.parse(localStorage.getItem("user"));
 
-      // ⚠️ Si soumission, on vérifie les champs requis
-      if (statut === "en attente") {
+      let url = "";
+      let body = {};
+      let successMsg = "";
+
+      // 💾 Cas 1 : Enregistrer un brouillon (incomplet possible)
+      if (type === "brouillon") {
+        url = "https://convention-platform.onrender.com/api/drafts";
+        body = {
+          ...formData,
+          prestataire: user._id,
+          statut: "brouillon",
+        };
+        successMsg = "💾 Brouillon enregistré (vous pourrez le compléter plus tard).";
+      }
+
+      // 📤 Cas 2 : Soumettre à GRDF (tous les champs requis)
+      if (type === "soumission") {
         const { numero, site, dateDebut, dateFin } = formData;
         if (!numero || !site || !dateDebut || !dateFin) {
           setMessage("⚠️ Tous les champs doivent être remplis avant la soumission.");
           setLoading(false);
           return;
         }
+
+        url = "https://convention-platform.onrender.com/api/conventions";
+        body = {
+          ...formData,
+          prestataire: user._id,
+          statut: "en attente",
+        };
+        successMsg = "✅ Convention envoyée à GRDF pour validation !";
       }
 
-      const res = await fetch("https://convention-platform.onrender.com/api/conventions", {
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          prestataire: user._id,
-          statut, // 💾 "brouillon" ou 📤 "en attente"
-        }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Erreur lors de la création");
 
-      setMessage(
-        statut === "brouillon"
-          ? "💾 Brouillon enregistré (vous pourrez le compléter plus tard)."
-          : "✅ Convention envoyée à GRDF pour validation !"
-      );
+      // 🎉 Message de succès
+      setMessage(successMsg);
 
-      if (statut === "en attente") onSuccess(data.convention);
-
-      if (statut === "en attente") {
+      // 🧹 Réinitialisation du formulaire après soumission officielle
+      if (type === "soumission") {
         setFormData({ numero: "", site: "", dateDebut: "", dateFin: "" });
+        onSuccess(data.convention);
       }
     } catch (err) {
       setMessage("❌ " + err.message);
@@ -76,7 +92,7 @@ export default function ConventionForm({ onSuccess }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          handleSubmit("en attente");
+          handleSubmit("soumission");
         }}
         className="grid grid-cols-2 gap-4"
       >

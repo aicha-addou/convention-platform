@@ -1,4 +1,3 @@
-// src/pages/Conventions.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
@@ -24,25 +23,51 @@ export default function Conventions() {
 
         setRole(user.role);
 
-        // 🧠 Détermine la route selon le rôle
-        let url = "";
+        let dataConventions = [];
+        let dataDrafts = [];
+
         if (user.role === "admin") {
-          url = "https://convention-platform.onrender.com/api/conventions";
+          // 👑 L'admin récupère toutes les conventions
+          const res = await fetch(
+            "https://convention-platform.onrender.com/api/conventions",
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Erreur serveur");
+          dataConventions = data;
         } else if (user.role === "prestataire") {
-          url = "https://convention-platform.onrender.com/api/conventions/mine";
+          // 👷 Le prestataire récupère ses conventions officielles
+          const res1 = await fetch(
+            "https://convention-platform.onrender.com/api/conventions/mine",
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          const data1 = await res1.json();
+          if (!res1.ok) throw new Error(data1.message);
+          dataConventions = data1;
+
+          // 💾 Et ses brouillons
+          const res2 = await fetch(
+            "https://convention-platform.onrender.com/api/drafts",
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          const data2 = await res2.json();
+          if (!res2.ok) throw new Error(data2.message);
+
+          // on ajoute une marque isDraft pour différencier
+          dataDrafts = data2.map((d) => ({ ...d, isDraft: true }));
         } else if (user.role === "referent") {
-          // plus tard : /api/conventions/authorized
-          url = "https://convention-platform.onrender.com/api/conventions";
+          // (plus tard : conventions autorisées)
+          const res = await fetch(
+            "https://convention-platform.onrender.com/api/conventions",
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message);
+          dataConventions = data;
         }
 
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Erreur serveur");
-
-        setConventions(data);
+        // 🧩 Fusion : conventions officielles + brouillons
+        setConventions([...dataConventions, ...dataDrafts]);
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -72,7 +97,7 @@ export default function Conventions() {
       </AdminLayout>
     );
 
-  // ✅ Liste des conventions
+  // ✅ Liste fusionnée : conventions + brouillons
   return (
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
@@ -80,7 +105,7 @@ export default function Conventions() {
           {role === "admin"
             ? "📋 Toutes les Conventions"
             : role === "prestataire"
-            ? "📄 Mes Conventions"
+            ? "📄 Mes Conventions (et brouillons)"
             : "👀 Conventions autorisées"}
         </h2>
 
@@ -112,19 +137,28 @@ export default function Conventions() {
             </thead>
             <tbody>
               {conventions.map((c) => (
-                <tr key={c._id} className="border-t hover:bg-gray-50 transition">
-                  <td className="px-4 py-2">{c.numero}</td>
-                  <td className="px-4 py-2">{c.site}</td>
+                <tr
+                  key={c._id}
+                  className={`border-t hover:bg-gray-50 transition ${
+                    c.isDraft ? "opacity-80" : ""
+                  }`}
+                >
+                  <td className="px-4 py-2">{c.numero || "—"}</td>
+                  <td className="px-4 py-2">{c.site || "—"}</td>
                   <td className="px-4 py-2">
-                    {new Date(c.dateDebut).toLocaleDateString()}
+                    {c.dateDebut
+                      ? new Date(c.dateDebut).toLocaleDateString()
+                      : "—"}
                   </td>
                   <td className="px-4 py-2">
-                    {new Date(c.dateFin).toLocaleDateString()}
+                    {c.dateFin ? new Date(c.dateFin).toLocaleDateString() : "—"}
                   </td>
                   <td className="px-4 py-2">
                     <span
                       className={`px-3 py-1 rounded-full font-medium ${
-                        c.statut === "brouillon"
+                        c.isDraft
+                          ? "bg-gray-200 text-gray-700"
+                          : c.statut === "brouillon"
                           ? "bg-gray-200 text-gray-700"
                           : c.statut === "en attente"
                           ? "bg-yellow-100 text-yellow-800"
@@ -135,12 +169,18 @@ export default function Conventions() {
                           : "bg-blue-100 text-blue-800"
                       }`}
                     >
-                      {c.statut}
+                      {c.isDraft ? "Brouillon" : c.statut}
                     </span>
                   </td>
                   <td className="px-4 py-2 text-center">
                     <button
-                      onClick={() => navigate(`/conventions/${c._id}`)}
+                      onClick={() =>
+                        navigate(
+                          c.isDraft
+                            ? `/drafts/${c._id}/edit`
+                            : `/conventions/${c._id}`
+                        )
+                      }
                       className="text-blue-700 hover:underline"
                     >
                       👁️ Consulter

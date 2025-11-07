@@ -1,10 +1,8 @@
+// src/routes/draftRoutes.js
 import express from "express";
-import { protect } from "../middlewares/authMiddleWare.js";
-import { authorize } from "../middlewares/authorizeMiddleWare.js";
+import { protect, authorize } from "../middlewares/authorizeMiddleWare.js";
 import DraftConvention from "../models/DraftConvention.js";
 import Convention from "../models/Convention.js";
-
-
 
 const router = express.Router();
 
@@ -15,44 +13,47 @@ router.post("/", protect, authorize("prestataire"), async (req, res) => {
       ...req.body,
       prestataire: req.user._id,
     });
-    res.status(201).json({ message: "Brouillon enregistré.", draft });
+    res.status(201).json(draft);
   } catch (err) {
-    res.status(500).json({ message: "Erreur serveur lors de la création du brouillon." });
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// 📋 Récupérer les brouillons du prestataire
+router.get("/", protect, authorize("prestataire"), async (req, res) => {
+  try {
+    const drafts = await DraftConvention.find({ prestataire: req.user._id });
+    res.json(drafts);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur" });
   }
 });
 
 // ✏️ Modifier un brouillon
 router.put("/:id", protect, authorize("prestataire"), async (req, res) => {
   try {
-    const draft = await DraftConvention.findById(req.params.id);
-
-    if (!draft) return res.status(404).json({ message: "Brouillon introuvable." });
-    if (draft.prestataire.toString() !== req.user._id.toString())
-      return res.status(403).json({ message: "Accès refusé." });
-
-    Object.assign(draft, req.body);
-    await draft.save();
-
-    res.json({ message: "Brouillon mis à jour avec succès.", draft });
+    const draft = await DraftConvention.findOneAndUpdate(
+      { _id: req.params.id, prestataire: req.user._id },
+      req.body,
+      { new: true }
+    );
+    if (!draft) return res.status(404).json({ message: "Brouillon introuvable" });
+    res.json(draft);
   } catch (err) {
-    res.status(500).json({ message: "Erreur serveur lors de la mise à jour." });
+    res.status(400).json({ message: err.message });
   }
 });
 
-// 📤 Soumettre un brouillon → création d'une convention officielle
+// 📤 Soumettre un brouillon (le transformer en convention)
 router.post("/:id/submit", protect, authorize("prestataire"), async (req, res) => {
   try {
-    const draft = await DraftConvention.findById(req.params.id);
-    if (!draft) return res.status(404).json({ message: "Brouillon introuvable." });
+    const draft = await DraftConvention.findOne({
+      _id: req.params.id,
+      prestataire: req.user._id,
+    });
 
-    // Vérifie les champs requis avant la soumission
-    if (!draft.numero || !draft.site || !draft.dateDebut || !draft.dateFin) {
-      return res.status(400).json({
-        message: "Tous les champs doivent être remplis avant la soumission.",
-      });
-    }
+    if (!draft) return res.status(404).json({ message: "Brouillon introuvable" });
 
-    // Création de la convention officielle
     const convention = await Convention.create({
       numero: draft.numero,
       site: draft.site,
@@ -62,31 +63,25 @@ router.post("/:id/submit", protect, authorize("prestataire"), async (req, res) =
       statut: "en attente",
     });
 
-    // Supprime le brouillon
-    await DraftConvention.findByIdAndDelete(req.params.id);
-
-    res.status(201).json({
-      message: "✅ Convention soumise à GRDF.",
-      convention,
-    });
+    await draft.deleteOne();
+    res.json({ message: "✅ Brouillon soumis à GRDF", convention });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Erreur serveur lors de la soumission." });
+    res.status(500).json({ message: err.message });
   }
 });
 
 // 🗑️ Supprimer un brouillon
 router.delete("/:id", protect, authorize("prestataire"), async (req, res) => {
   try {
-    const draft = await DraftConvention.findById(req.params.id);
-    if (!draft) return res.status(404).json({ message: "Brouillon introuvable." });
-    if (draft.prestataire.toString() !== req.user._id.toString())
-      return res.status(403).json({ message: "Accès refusé." });
-
-    await DraftConvention.findByIdAndDelete(req.params.id);
-    res.json({ message: "Brouillon supprimé avec succès." });
+    const deleted = await DraftConvention.findOneAndDelete({
+      _id: req.params.id,
+      prestataire: req.user._id,
+    });
+    if (!deleted)
+      return res.status(404).json({ message: "Brouillon introuvable" });
+    res.json({ message: "Brouillon supprimé" });
   } catch (err) {
-    res.status(500).json({ message: "Erreur serveur lors de la suppression." });
+    res.status(500).json({ message: err.message });
   }
 });
 
