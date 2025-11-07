@@ -27,15 +27,24 @@ const conventionSchema = new mongoose.Schema(
 
     statut: {
       type: String,
-      enum: ["brouillon", "en attente", "validée", "signée"],
+      enum: ["brouillon", "en attente", "validée", "refusée", "signée"],
       default: "brouillon",
     },
+
+    commentaireAdmin: { 
+      type: String, 
+      default: "" }, 
+
+
     documents: [
       {
         name: String,
         url: String,
       },
     ],
+
+
+
   },
   { timestamps: true }
 );

@@ -147,6 +147,24 @@ export default function Conventions() {
                       <button className="text-blue-700 hover:underline">Modifier</button>
                     </td>
                   )}
+
+                  {role === "admin" && (
+                    <td className="px-4 py-2 flex justify-center gap-2">
+                      <button
+                        onClick={() => handleValidation(c._id, "validée")}
+                        className="text-green-600 hover:underline"
+                      >
+                        Valider
+                      </button>
+                      <button
+                        onClick={() => handleValidation(c._id, "refusée")}
+                        className="text-red-600 hover:underline"
+                      >
+                        Refuser
+                      </button>
+                    </td>
+                  )}
+
                 </tr>
               ))}
             </tbody>
@@ -180,4 +198,40 @@ export default function Conventions() {
       alert("❌ Erreur lors de la suppression : " + err.message);
     }
   }
+
+
+  async function handleValidation(id, statut) {
+  const commentaire = prompt(`Laissez un commentaire pour cette décision (${statut}) :`) || "";
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(
+      `https://convention-platform.onrender.com/api/conventions/${id}/validation`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ statut, commentaireAdmin: commentaire }),
+      }
+    );
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    alert(data.message);
+    // Met à jour la liste sans recharger
+    setConventions((prev) =>
+      prev.map((c) => (c._id === id ? { ...c, statut, commentaireAdmin: commentaire } : c))
+    );
+  } catch (err) {
+    alert("❌ Erreur : " + err.message);
+  }
+}
+
+
+  
+
+
 }

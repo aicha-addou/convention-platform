@@ -72,29 +72,41 @@ router.get("/:id", protect, async (req, res) => {
 
 /**
  * 🟢 POST /api/conventions
- * Crée une nouvelle convention (admin uniquement)
+ * Crée une nouvelle convention (admin/prestataire uniquement)
  */
-router.post("/", protect, authorize("admin"), async (req, res) => {
+router.post("/", protect, authorize("admin", "prestataire"), async (req, res) => {
   try {
-    const { numero, site, dateDebut, dateFin, prestataire } = req.body;
+    const { numero, site, dateDebut, dateFin, prestataire, statut } = req.body;
 
-    if (!numero || !site || !dateDebut || !dateFin || !prestataire) {
+    // ✅ Si l'utilisateur est prestataire, on force son propre ID et un statut "en attente"
+    const prestataireId = req.user.role === "prestataire" ? req.user._id : prestataire;
+    const statutFinal = req.user.role === "prestataire" ? "en attente" : statut || "brouillon";
+
+    if (!numero || !site || !dateDebut || !dateFin) {
       return res.status(400).json({ message: "Tous les champs sont obligatoires." });
     }
 
-    // Vérifie que le numéro n’existe pas déjà
     const existing = await Convention.findOne({ numero });
     if (existing) {
       return res.status(400).json({ message: "Une convention avec ce numéro existe déjà." });
     }
 
-    const convention = await Convention.create(req.body);
+    const convention = await Convention.create({
+      numero,
+      site,
+      dateDebut,
+      dateFin,
+      prestataire: prestataireId,
+      statut: statutFinal,
+    });
+
     res.status(201).json({ message: "Convention créée avec succès", convention });
   } catch (error) {
     console.error("Erreur création convention :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
+
 
 /**
  * 🟢 PUT /api/conventions/:id
@@ -149,6 +161,42 @@ router.delete("/:id", protect, authorize("admin"), async (req, res) => {
     res.status(500).json({ message: "Erreur serveur lors de la suppression." });
   }
 });
+
+/**
+// 🟢 Validation / refus d’une convention (admin only)
+ */
+router.put("/:id/validation", protect, authorize("admin"), async (req, res) => {
+  try {
+    const { statut, commentaireAdmin } = req.body;
+
+    // Vérif des valeurs autorisées
+    const statutsAutorises = ["validée", "refusée"];
+    if (!statutsAutorises.includes(statut)) {
+      return res.status(400).json({ message: "Statut non valide." });
+    }
+
+    const convention = await Convention.findById(req.params.id);
+    if (!convention) {
+      return res.status(404).json({ message: "Convention introuvable." });
+    }
+
+    // Mise à jour
+    convention.statut = statut;
+    convention.commentaireAdmin = commentaireAdmin || "";
+    await convention.save();
+
+    res.json({
+      message: `Convention ${statut === "validée" ? "validée ✅" : "refusée ❌"} avec succès.`,
+      convention,
+    });
+  } catch (error) {
+    console.error("Erreur validation convention :", error);
+    res.status(500).json({ message: "Erreur serveur lors de la validation." });
+  }
+});
+
+
+
 
 
 export default router;
