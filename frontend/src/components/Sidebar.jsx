@@ -86,8 +86,21 @@ export default function Sidebar() {
           ))}
         </nav>
 
+        {/* Liens fixes en bas */}
+        <div className="p-4 border-t border-gray-100 space-y-2">
+          {/* 👤 Lien Profil */}
+          <button
+            onClick={() => navigate("/profile")}
+            className={`flex items-center gap-2 w-full px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition ${
+              location.pathname === "/profile"
+                ? "bg-blue-700 text-white font-semibold"
+                : ""
+            }`}
+          >
+            👤 Profil
+          </button>
+
         {/* Bouton de déconnexion */}
-        <div className="p-4 border-t border-gray-100">
           <button
             onClick={() => {
               localStorage.removeItem("token");

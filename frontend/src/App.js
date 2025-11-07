@@ -13,6 +13,7 @@ import Reports from "./pages/Reports";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 
 // 🧩 Pages spécifiques Référent
 import DashboardReferent from "./pages/DashboardReferent";
@@ -121,7 +122,19 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* 🔒 Page profil (commune à tous les rôles) */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "referent", "prestataire"]}>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
+
+
   );
 }
 
