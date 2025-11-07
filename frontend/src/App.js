@@ -8,6 +8,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // 🧩 Pages communes Admin / Référent / Prestataire
 import Conventions from "./pages/Conventions";
 import ConventionFormPage from "./pages/ConventionFormPage";
+import ConventionDetails from "./pages/ConventionDetails";
+
+import Drafts from "./pages/Drafts";
+import DraftEditPage from "./pages/DraftEditPage";
 
 
 
@@ -150,6 +154,33 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={["prestataire"]}>
             <ConventionFormPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/conventions/:id"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <ConventionDetails />
+          </ProtectedRoute>
+         }
+      />
+      
+      <Route
+        path="/drafts"
+        element={
+          <ProtectedRoute allowedRoles={["prestataire"]}>
+            <Drafts />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/drafts/:id/edit"
+        element={
+          <ProtectedRoute allowedRoles={["prestataire"]}>
+            <DraftEditPage />
           </ProtectedRoute>
         }
       />

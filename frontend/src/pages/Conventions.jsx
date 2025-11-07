@@ -1,14 +1,14 @@
 // src/pages/Conventions.jsx
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
-
-
 
 export default function Conventions() {
   const [conventions, setConventions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [role, setRole] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchConventions = async () => {
@@ -31,7 +31,7 @@ export default function Conventions() {
         } else if (user.role === "prestataire") {
           url = "https://convention-platform.onrender.com/api/conventions/mine";
         } else if (user.role === "referent") {
-          // plus tard tu feras /api/conventions/authorized
+          // plus tard : /api/conventions/authorized
           url = "https://convention-platform.onrender.com/api/conventions";
         }
 
@@ -75,27 +75,25 @@ export default function Conventions() {
   // ✅ Liste des conventions
   return (
     <AdminLayout>
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-        {role === "admin"
-          ? "📋 Toutes les Conventions"
-          : role === "prestataire"
-          ? "📄 Mes Conventions"
-          : "👀 Conventions autorisées"}
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800">
+          {role === "admin"
+            ? "📋 Toutes les Conventions"
+            : role === "prestataire"
+            ? "📄 Mes Conventions"
+            : "👀 Conventions autorisées"}
+        </h2>
 
-      {/* 🚀 Bouton "Nouvelle convention" visible uniquement pour les prestataires */}
-      {role === "prestataire" && (
-        <div className="mb-6 flex justify-end">
+        {/* 🚀 Bouton "Nouvelle convention" visible uniquement pour les prestataires */}
+        {role === "prestataire" && (
           <button
-            onClick={() => (window.location.href = "/conventions/nouvelle")}
+            onClick={() => navigate("/conventions/nouvelle")}
             className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 transition"
           >
             ➕ Nouvelle convention
           </button>
-        </div>
-      )}
-
-
+        )}
+      </div>
 
       {conventions.length === 0 ? (
         <p className="text-gray-500">Aucune convention trouvée.</p>
@@ -109,7 +107,7 @@ export default function Conventions() {
                 <th className="px-4 py-2">Début</th>
                 <th className="px-4 py-2">Fin</th>
                 <th className="px-4 py-2">Statut</th>
-                {role === "admin" && <th className="px-4 py-2 text-center">Actions</th>}
+                <th className="px-4 py-2 text-center">Consulter</th>
               </tr>
             </thead>
             <tbody>
@@ -117,8 +115,12 @@ export default function Conventions() {
                 <tr key={c._id} className="border-t hover:bg-gray-50 transition">
                   <td className="px-4 py-2">{c.numero}</td>
                   <td className="px-4 py-2">{c.site}</td>
-                  <td className="px-4 py-2">{new Date(c.dateDebut).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">{new Date(c.dateFin).toLocaleDateString()}</td>
+                  <td className="px-4 py-2">
+                    {new Date(c.dateDebut).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-2">
+                    {new Date(c.dateFin).toLocaleDateString()}
+                  </td>
                   <td className="px-4 py-2">
                     <span
                       className={`px-3 py-1 rounded-full font-medium ${
@@ -128,43 +130,22 @@ export default function Conventions() {
                           ? "bg-yellow-100 text-yellow-800"
                           : c.statut === "validée"
                           ? "bg-green-100 text-green-800"
+                          : c.statut === "refusée"
+                          ? "bg-red-100 text-red-700"
                           : "bg-blue-100 text-blue-800"
                       }`}
                     >
                       {c.statut}
                     </span>
                   </td>
-
-                  {/* 🧩 Boutons pour l'admin uniquement */}
-                  {role === "admin" && (
-                    <td className="px-4 py-2 flex justify-center gap-2">
-                      <button
-                        onClick={() => handleDelete(c._id)}
-                        className="text-red-600 hover:underline"
-                      >
-                        Supprimer
-                      </button>
-                      <button className="text-blue-700 hover:underline">Modifier</button>
-                    </td>
-                  )}
-
-                  {role === "admin" && (
-                    <td className="px-4 py-2 flex justify-center gap-2">
-                      <button
-                        onClick={() => handleValidation(c._id, "validée")}
-                        className="text-green-600 hover:underline"
-                      >
-                        Valider
-                      </button>
-                      <button
-                        onClick={() => handleValidation(c._id, "refusée")}
-                        className="text-red-600 hover:underline"
-                      >
-                        Refuser
-                      </button>
-                    </td>
-                  )}
-
+                  <td className="px-4 py-2 text-center">
+                    <button
+                      onClick={() => navigate(`/conventions/${c._id}`)}
+                      className="text-blue-700 hover:underline"
+                    >
+                      👁️ Consulter
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -173,65 +154,4 @@ export default function Conventions() {
       )}
     </AdminLayout>
   );
-
-  // ⚙️ Suppression (admin uniquement)
-  async function handleDelete(id) {
-    const confirmDelete = window.confirm("Voulez-vous vraiment supprimer cette convention ?");
-    if (!confirmDelete) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
-        `https://convention-platform.onrender.com/api/conventions/${id}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      alert("✅ Convention supprimée !");
-      setConventions(conventions.filter((c) => c._id !== id));
-    } catch (err) {
-      alert("❌ Erreur lors de la suppression : " + err.message);
-    }
-  }
-
-
-  async function handleValidation(id, statut) {
-  const commentaire = prompt(`Laissez un commentaire pour cette décision (${statut}) :`) || "";
-
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(
-      `https://convention-platform.onrender.com/api/conventions/${id}/validation`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ statut, commentaireAdmin: commentaire }),
-      }
-    );
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
-
-    alert(data.message);
-    // Met à jour la liste sans recharger
-    setConventions((prev) =>
-      prev.map((c) => (c._id === id ? { ...c, statut, commentaireAdmin: commentaire } : c))
-    );
-  } catch (err) {
-    alert("❌ Erreur : " + err.message);
-  }
-}
-
-
-  
-
-
 }

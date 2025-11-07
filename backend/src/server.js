@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import conventionRoutes from "./routes/conventionRoutes.js";
+import draftRoutes from "./routes/draftRoutes.js";
 
 
 dotenv.config(); // ca veut dire va chercher les variables globales dans le fichier .env
@@ -47,6 +48,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/conventions", conventionRoutes);
+app.use("/api/drafts", draftRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "API VIGIK Platform ready 🚀" });

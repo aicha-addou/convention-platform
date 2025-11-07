@@ -23,7 +23,7 @@ export default function ConventionFormPage() {
       {/* Formulaire de création */}
       <ConventionForm
         onSuccess={() => {
-          alert("✅ Convention envoyée à GRDF pour validation !");
+          alert("✅ Convention soumise à GRDF avec succès !");
           navigate("/conventions");
         }}
       />
