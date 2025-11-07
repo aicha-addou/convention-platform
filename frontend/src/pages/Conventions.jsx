@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../layouts/AdminLayout";
 
+
+
 export default function Conventions() {
   const [conventions, setConventions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,6 +82,20 @@ export default function Conventions() {
           ? "📄 Mes Conventions"
           : "👀 Conventions autorisées"}
       </h2>
+
+      {/* 🚀 Bouton "Nouvelle convention" visible uniquement pour les prestataires */}
+      {role === "prestataire" && (
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={() => (window.location.href = "/conventions/nouvelle")}
+            className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 transition"
+          >
+            ➕ Nouvelle convention
+          </button>
+        </div>
+      )}
+
+
 
       {conventions.length === 0 ? (
         <p className="text-gray-500">Aucune convention trouvée.</p>

@@ -7,6 +7,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 // 🧩 Pages communes Admin / Référent / Prestataire
 import Conventions from "./pages/Conventions";
+import ConventionFormPage from "./pages/ConventionFormPage";
+
+
+
 import Reports from "./pages/Reports";
 
 // 🧩 Pages spécifiques Admin
@@ -132,6 +136,26 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/conventions"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "prestataire"]}>
+            <Conventions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/conventions/nouvelle"
+        element={
+          <ProtectedRoute allowedRoles={["prestataire"]}>
+            <ConventionFormPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+
     </Routes>
 
 
