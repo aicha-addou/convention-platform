@@ -1,7 +1,10 @@
 import express from "express";
-import { protect, authorize } from "../middlewares/authMiddleWare.js";
+import { protect } from "../middlewares/authMiddleWare.js";
+import { authorize } from "../middlewares/authorizeMiddleWare.js";
 import DraftConvention from "../models/DraftConvention.js";
 import Convention from "../models/Convention.js";
+
+
 
 const router = express.Router();
 
