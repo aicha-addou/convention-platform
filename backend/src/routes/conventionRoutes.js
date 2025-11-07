@@ -124,17 +124,31 @@ router.put("/:id", protect, authorize("admin"), async (req, res) => {
  */
 router.delete("/:id", protect, authorize("admin"), async (req, res) => {
   try {
-    const convention = await Convention.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+
+    console.log("🗑️ Suppression demandée pour l'ID :", id);
+
+    // Vérifie si l'ID est valide pour MongoDB
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "ID de convention invalide." });
+    }
+
+    const convention = await Convention.findById(id);
 
     if (!convention) {
+      console.log("❌ Aucune convention trouvée avec cet ID.");
       return res.status(404).json({ message: "Convention non trouvée." });
     }
 
-    res.json({ message: "Convention supprimée avec succès" });
+    await convention.deleteOne();
+
+    console.log("✅ Convention supprimée avec succès :", id);
+    res.json({ message: "Convention supprimée avec succès." });
   } catch (error) {
-    console.error("Erreur suppression convention :", error);
-    res.status(400).json({ message: "Erreur lors de la suppression." });
+    console.error("💥 Erreur lors de la suppression :", error);
+    res.status(500).json({ message: "Erreur serveur lors de la suppression." });
   }
 });
+
 
 export default router;
